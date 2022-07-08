@@ -9,6 +9,7 @@
 #include <iostream>
 #include <learnopengl/vertices.h>
 #include <learnopengl/utility.h>
+#include <learnopengl/model.h>
 
 // 窗口尺寸设置
 const unsigned int SCR_WIDTH = 960;
@@ -120,6 +121,9 @@ int main() {
     // 创建和编译着色器zprogram
     Shader lightingShader("../6.multiple_lights.vs", "../6.multiple_lights.fs");
     Shader lightCubeShader("../6.light_cube.vs", "../6.light_cube.fs");
+    Shader modelShader{"../1.model_loading.vs", "../1.model_loading.fs"};
+
+    model trunk{"../resources/models/trunk.obj"};
 
     // 首先配置立方体的VAO和VBO
     unsigned int VBO, cubeVAO;
@@ -175,6 +179,8 @@ int main() {
         lightingShader.use();
         lightingShader.setVec3("viewPos", camera.Position);
         lightingShader.setFloat("material.shininess", 32.0f);
+
+        modelShader.use();
 
         // 平行光
         lightingShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
@@ -247,6 +253,13 @@ int main() {
         glm::mat4 view = camera.GetViewMatrix();
         lightingShader.setMat4("projection", projection);
         lightingShader.setMat4("view", view);
+        modelShader.setMat4("projection", projection);
+        modelShader.setMat4("view", view);
+        glm::mat4 trunk_model = glm::mat4(1.0f);
+        trunk_model = glm::translate(trunk_model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        trunk_model = glm::scale(trunk_model, glm::vec3(1.0f, 1.0f, 1.0f));
+        modelShader.setMat4("model", trunk_model);
+        trunk.draw(modelShader);
 
         // 全局变换
         glm::mat4x4 model;
@@ -286,7 +299,6 @@ int main() {
             lightCubeShader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-
 
         // glfw: 交换缓冲区和检测输入输出（按键/释放、鼠标移动等）
         glfwSwapBuffers(window);
